@@ -1,0 +1,293 @@
+# Getting started with the REST API
+
+Learn how to use the GitHub REST API.
+
+## Introduction
+
+This article describes how to use the GitHub REST API with GitHub CLI, `curl`, or JavaScript. For a quickstart guide, see [Quickstart for GitHub REST API](/en/rest/quickstart).
+
+<div class="ghd-tool curl">
+
+</div>
+
+## About requests to the REST API
+
+This section describes the elements that make up an API request:
+
+* [HTTP method](#http-method)
+* [Path](#path)
+* [Headers](#headers)
+* [Media types](#media-types)
+* [Authentication](#authentication)
+* [Parameters](#parameters)
+
+Every request to the REST API includes an HTTP method and a path. Depending on the REST API endpoint, you might also need to specify request headers, authentication information, query parameters, or body parameters.
+
+The REST API reference documentation describes the HTTP method, path, and parameters for every endpoint. It also displays example requests and responses for each endpoint. For more information, see the [REST reference documentation](/en/rest).
+
+### HTTP method
+
+The HTTP method of an endpoint defines the type of action it performs on a given resource. Some common HTTP methods are `GET`, `POST`, `DELETE`, and `PATCH`. The REST API reference documentation provides the HTTP method for every endpoint.
+
+For example, the HTTP method for the ["List repository issues" endpoint](/en/rest/issues/issues#list-repository-issues) is `GET`."
+
+Where possible, the GitHub REST API strives to use an appropriate HTTP method for each action.
+
+* `GET`: Used for retrieving resources.
+* `POST`: Used for creating resources.
+* `PATCH`: Used for updating properties of resources.
+* `PUT`: Used for replacing resources or collections of resources.
+* `DELETE`: Used for deleting resources.
+
+### Path
+
+Each endpoint has a path. The REST API reference documentation gives the path for every endpoint. For example, the path for the ["List repository issues" endpoint](/en/rest/issues/issues#list-repository-issues) is `/repos/{owner}/{repo}/issues`.
+
+The curly brackets `{}` in a path denote path parameters that you need to specify. Path parameters modify the endpoint path and are required in your request. For example, the path parameters for the ["List repository issues" endpoint](/en/rest/issues/issues#list-repository-issues) are `{owner}` and `{repo}`. To use this path in your API request, replace `{repo}` with the name of the repository where you would like to request a list of issues, and replace `{owner}` with the name of the account that owns the repository.
+
+### Headers
+
+Headers provide extra information about the request and the desired response. Following are some examples of headers that you can use in your requests to the GitHub REST API. For an example of a request that uses headers, see [Making a request](#making-a-request).
+
+#### `Accept`
+
+Most GitHub REST API endpoints specify that you should pass an `Accept` header with a value of `application/vnd.github+json`. The value of the `Accept` header is a media type. For more information about media types, see [Media types](#media-types).
+
+#### `X-GitHub-Api-Version`
+
+You should use this header to specify a version of the REST API to use for your request. For more information, see [API Versions](/en/rest/overview/api-versions).
+
+#### `User-Agent`
+
+All API requests must include a valid `User-Agent` header. The `User-Agent` header identifies the user or application that is making the request.
+
+<div class="ghd-tool cli">
+
+By default, GitHub CLI sends a valid `User-Agent` header. However, GitHub recommends using your GitHub username, or the name of your application, for the `User-Agent` header value. This allows GitHub to contact you if there are problems.
+
+</div>
+
+<div class="ghd-tool curl">
+
+By default, `curl` sends a valid `User-Agent` header. However GitHub recommends using your GitHub username, or the name of your application, for the `User-Agent` header value. This allows GitHub to contact you if there are problems.
+
+</div>
+
+<div class="ghd-tool javascript">
+
+If you use the Octokit.js SDK, the SDK will send a valid `User-Agent` header for you. However, GitHub recommends using your GitHub username, or the name of your application, for the `User-Agent` header value. This allows GitHub to contact you if there are problems.
+
+</div>
+
+The following is an example `User-Agent` for an app named `Awesome-Octocat-App`:
+
+```shell
+User-Agent: Awesome-Octocat-App
+```
+
+Requests with no `User-Agent` header will be rejected. If you provide an invalid `User-Agent` header, you will receive a `403 Forbidden` response.
+
+<!-- Anchor to maintain links to this heading -->
+
+<a name="media-types"></a>
+
+### Media types
+
+You can specify one or more media types by adding them to the `Accept` header of your request. For more information about the `Accept` header, see [`Accept`](#accept).
+
+Media types specify the format of the data you want to consume from the API. Media types are specific to resources, allowing them to change independently and support formats that other resources don't. The documentation for each GitHub REST API endpoint will describe the media types that it supports. For more information, see the [GitHub REST API documentation](/en/rest).
+
+The most common media types supported by the GitHub REST API are `application/vnd.github+json` and `application/json`.
+
+There are custom media types that you can use with some endpoints. For example, the REST API to manage [commits](/en/rest/commits/commits#get-a-commit) and [pull requests](/en/rest/pulls/pulls) support the media types `diff`, `patch`, and `sha`. The media types `full`, `raw`, `text`, or `html` are used by some other endpoints.
+
+All custom media types for GitHub look like this: `application/vnd.github.PARAM+json`, where `PARAM` is the name of the media type. For example, to specify the `raw` media type, you would use `application/vnd.github.raw+json`.
+
+For an example of a request that uses media types, see [Making a request](#making-a-request).
+
+### Authentication
+
+Many endpoints require authentication or return additional information if you are authenticated. Additionally, you can make more requests per hour when you are authenticated.
+
+<div class="ghd-tool curl">
+
+To authenticate your request, you will need to provide an authentication token with the required scopes or permissions. There a few different ways to get a token: You can create a personal access token, generate a token with a GitHub App, or use the built-in `GITHUB_TOKEN` in a GitHub Actions workflow. For more information, see [Authenticating to the REST API](/en/rest/overview/authenticating-to-the-rest-api).
+
+For an example of a request that uses an authentication token, see [Making a request](#making-a-request).
+
+> \[!NOTE]
+> If you don't want to create a token, you can use GitHub CLI. GitHub CLI will take care of authentication for you, and help keep your account secure. For more information, see the [GitHub CLI version of this page](/en/rest/guides/getting-started-with-the-rest-api?tool=cli).
+
+> \[!WARNING]
+> Treat your access token the same way you would treat your passwords or other sensitive credentials. For more information, see [Keeping your API credentials secure](/en/rest/overview/keeping-your-api-credentials-secure).
+
+</div>
+
+<div class="ghd-tool cli">
+
+Although some REST API endpoints are accessible without authentication, GitHub CLI requires you to authenticate before you can use the `api` subcommand to make an API request. Use the `auth login` subcommand to authenticate to GitHub. For more information, see [Making a request](#making-a-request).
+
+</div>
+
+<div class="ghd-tool javascript">
+
+To authenticate your request, you will need to provide an authentication token with the required scopes or permissions. There a few different ways to get a token: You can create a personal access token, generate a token with a GitHub App, or use the built-in `GITHUB_TOKEN` in a GitHub Actions workflow. For more information, see [Authenticating to the REST API](/en/rest/overview/authenticating-to-the-rest-api).
+
+For an example of a request that uses an authentication token, see [Making a request](#making-a-request).
+
+> \[!WARNING]
+> Treat your access token the same way you would treat your passwords or other sensitive credentials. For more information, see [Keeping your API credentials secure](/en/rest/overview/keeping-your-api-credentials-secure).
+
+</div>
+
+### Parameters
+
+Many API methods require or allow you to send additional information in parameters in your request. There are a few different types of parameters: Path parameters, body parameters, and query parameters.
+
+#### Path parameters
+
+Path parameters modify the endpoint path. These parameters are required in your request. For more information, see [Path](#path).
+
+#### Body parameters
+
+Body parameters allow you to pass additional data to the API. These parameters can be optional or required, depending on the endpoint. For example, a body parameter may allow you to specify an issue title when creating a new issue, or specify certain settings when enabling or disabling a feature. The documentation for each GitHub REST API endpoint will describe the body parameters that it supports. For more information, see the [GitHub REST API documentation](/en/rest).
+
+For example, the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) requires that you specify a title for the new issue in your request. It also allows you to optionally specify other information, such as text to put in the issue body, users to assign to the new issue, or labels to apply to the new issue. For an example of a request that uses body parameters, see [Making a request](#making-a-request).
+
+You must authenticate your request to pass body parameters. For more information, see [Authentication](#authentication).
+
+#### Query parameters
+
+Query parameters allow you to control what data is returned for a request. These parameters are usually optional. The documentation for each GitHub REST API endpoint will describe any query parameters that it supports. For more information, see the [GitHub REST API documentation](/en/rest).
+
+For example, the ["List public events" endpoint](/en/rest/activity/events#list-public-events) returns thirty issues by default. You can use the `per_page` query parameter to return two issues instead of 30. You can use the `page` query parameter to fetch only the first page of results. For an example of a request that uses query parameters, see [Making a request](#making-a-request).
+
+## Making a request
+
+<div class="ghd-tool cli">
+
+This section demonstrates how to make an authenticated request to the GitHub REST API using GitHub CLI.
+
+### 1. Setup
+
+Install GitHub CLI on macOS, Windows, or Linux. For more information, see [Installation](https://github.com/cli/cli#installation) in the GitHub CLI repository.
+
+### 2. Authenticate
+
+1. To authenticate to GitHub, run the following command from your terminal.
+
+   ```shell
+   gh auth login
+   ```
+
+   You can use the `--scopes` option to specify what scopes you want. If you want to authenticate with a token that you created, you can use the `--with-token` option. For more information, see the [GitHub CLI `auth login` documentation](https://cli.github.com/manual/gh_auth_login).
+
+2. Select where you want to authenticate to:
+
+   * If you access GitHub at GitHub.com, select **GitHub.com**.
+   * If you access GitHub at a different domain, select **Other**, then enter your hostname (for example: `octocorp.ghe.com`).
+
+3. Follow the rest of the on-screen prompts.
+
+   GitHub CLI automatically stores your Git credentials for you when you choose HTTPS as your preferred protocol for Git operations and answer "yes" to the prompt asking if you would like to authenticate to Git with your GitHub credentials. This can be useful as it allows you to use Git commands like `git push` and `git pull` without needing to set up a separate credential manager or use SSH.
+
+### 3. Choose an endpoint for your request
+
+1. Choose an endpoint to make a request to. You can explore GitHub's [REST API documentation](/en/rest) to discover endpoints that you can use to interact with GitHub.
+
+2. Identify the HTTP method and path of the endpoint. You will send these with your request. For more information, see [HTTP method](#http-method) and [Path](#path).
+
+   For example, the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) uses the HTTP method `POST` and the path `/repos/{owner}/{repo}/issues`.
+
+3. Identify any required path parameters. Required path parameters appear in curly brackets `{}` in the path of the endpoint. Replace each parameter placeholder with the desired value. For more information, see [Path](#path).
+
+   For example, the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) uses the path `/repos/{owner}/{repo}/issues`, and the path parameters are `{owner}` and `{repo}`. To use this path in your API request, replace `{repo}` with the name of the repository where you would like to create a new issue, and replace `{owner}` with the name of the account that owns the repository.
+
+### 4. Make a request with GitHub CLI
+
+Use the GitHub CLI `api` subcommand to make your API request. For more information, see the [GitHub CLI `api` documentation](https://cli.github.com/manual/gh_api).
+
+In your request, specify the following options and values:
+
+* **--method** followed by the HTTP method and the path of the endpoint. For more information, see [HTTP method](#http-method) and [Path](#path).
+* **--header:**
+  * **`Accept`:** Pass the media type in an `Accept` header. To pass multiple media types in an `Accept` header, separate the media types with a comma: `Accept: application/vnd.github+json,application/vnd.github.diff`. For more information, see [`Accept`](#accept) and [Media types](#media-types).
+  * **`X-GitHub-Api-Version`:** Pass the API version in a `X-GitHub-Api-Version` header. For more information, see [`X-GitHub-Api-Version`](#x-github-api-version).
+* **`-f`** or **`-F`** followed by any body parameters or query parameters in `key=value` format. Use the `-F` option to pass a parameter that is a number, Boolean, or null. Use the `-f` option to pass string parameters.
+
+  Some endpoints use query parameters that are arrays. To send an array in the query string, use the query parameter once per array item, and append `[]` after the query parameter name. For example, to provide an array of two repository IDs, use `-f repository_ids[]=REPOSITORY_A_ID -f repository_ids[]=REPOSITORY_B_ID`.
+
+  If you do not need to specify any body parameters or query parameters in your request, omit this option. For more information, see [Body parameters](#body-parameters) and [Query parameters](#query-parameters). For examples, see [Example request using body parameters](#example-request-using-body-parameters) and [Example request using query parameters](#example-request-using-query-parameters).
+
+#### Example request
+
+The following example request uses the ["Get Octocat" endpoint](/en/rest/meta/meta#get-octocat) to return the octocat as ASCII art.
+
+```shell copy
+gh api --method GET /octocat \
+--header 'Accept: application/vnd.github+json' \
+--header "X-GitHub-Api-Version: 2022-11-28"
+```
+
+#### Example request using query parameters
+
+The ["List public events" endpoint](/en/rest/activity/events#list-public-events) returns thirty issues by default. The following example uses the `per_page` query parameter to return two issues instead of 30, and the `page` query parameter to fetch only the first page of results.
+
+```shell copy
+gh api --method GET /events -F per_page=2 -F page=1
+--header 'Accept: application/vnd.github+json' \
+```
+
+#### Example request using body parameters
+
+The following example uses the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) to create a new issue in the octocat/Spoon-Knife repository. In the response, find the `html_url` of your issue, and navigate to your issue in the browser.
+
+```shell copy
+gh api --method POST /repos/octocat/Spoon-Knife/issues \
+--header "Accept: application/vnd.github+json" \
+--header "X-GitHub-Api-Version: 2022-11-28" \
+-f title='Created with the REST API' \
+-f body='This is a test issue created by the REST API' \
+```
+
+</div>
+
+<div class="ghd-tool curl">
+
+This section demonstrates how to make an authenticated request to the GitHub REST API using `curl`.
+
+### 1. Setup
+
+You must have `curl` installed on your machine. To check if `curl` is already installed, run `curl --version` on the command line.
+
+* If the output provides information about the version of `curl`, that means `curl` is installed.
+* If you get a message similar to `command not found: curl`, that means `curl` is not installed. Download and install `curl`. For more information, see [the curl download page](https://curl.se/download.html).
+
+### 2. Choose an endpoint for your request
+
+1. Choose an endpoint to make a request to. You can explore GitHub's [REST API documentation](/en/rest) to discover endpoints that you can use to interact with GitHub.
+
+2. Identify the HTTP method and path of the endpoint. You will send these with your request. For more information, see [HTTP method](#http-method) and [Path](#path).
+
+   For example, the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) uses the HTTP method `POST` and the path `/repos/{owner}/{repo}/issues`.
+
+3. Identify any required path parameters. Required path parameters appear in curly brackets `{}` in the path of the endpoint. Replace each parameter placeholder with the desired value. For more information, see [Path](#path).
+
+   For example, the ["Create an issue" endpoint](/en/rest/issues/issues#create-an-issue) uses the path `/repos/{owner}/{repo}/issues`, and the path parameters are `{owner}` and `{repo}`. To use this path in your API request, replace `{repo}` with the name of the repository where you would like to create a new issue, and replace `{owner}` with the name of the account that owns the repository.
+
+### 3. Create authentication credentials
+
+Create an access token to authenticate your request. You can save your token and use it for multiple requests. Give the token any scopes or permissions that are required to access the endpoint. You will send this token in an `Authorization` header with your request. For more information, see [Authentication](#authentication).
+
+### 4. Make a `curl` request
+
+Use the `curl` command to make your request. For more information, see [the curl documentation](https://curl.se/docs/manpage.html).
+
+Specify the following options and values in your request:
+
+* **`--request` or `-X`** followed by the HTTP method as the value. For more information, see [HTTP method](#http-method).
+* **`--url`** followed by the full path as the value. The full path is a URL that includes the base URL for the GitHub REST API (`https://api.github.com`) and the path of the endpoint, like this: `https://api.github.com/PATH`. Replace `PATH` with the path of the endpoint. For more information, see [Path](#path).
+
+  To use query parameters, add a `?` to the end of the path, then append your query parameter name and value in the form `parameter_name=value`. Separate multiple query parameters with `&`. If you need to send an array in the query string, use the query parameter once per array item, and append `[]` after the query parameter name. For example, to provide an array of two repository IDs, use `?repository_ids[]=REPOSITORY_A_ID&repository_ids[]=REPOSITORY_B_ID`. For more information, see [Query parameters](#query-parameters). For an example, see [Example request using query parameters](#example-request-using-query-parameters-1).
+* **`--header` or `-H`:**
+  * **`Accept`:** Pass the media type in an `Accept` header. To pass multiple media types in an `Accept` header, separate the media types with a comma, for example: `Accept: application/vnd.github+json,application/vnd.github.diff`. For more information, see [`Accept`](#accept) and
